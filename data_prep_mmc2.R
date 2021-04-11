@@ -48,6 +48,7 @@ fit_files = list.files("data/mmc2", pattern ="model_fit" )
 
 for (i in 1:length(fit_files)){
   d = read.csv(paste0("data/mmc2/",fit_files[i]))
+  question = strsplit(strsplit(fit_files[i],split = "_")[[1]][3], "-")[[1]][1]
   who_countries = d %>% 
     select(country.or.territory, who_region) %>% 
     distinct()
@@ -55,7 +56,8 @@ for (i in 1:length(fit_files)){
     #filter(response == "strongly agree") %>% 
     select(country.or.territory, time, response, mean) %>% 
     dcast(country.or.territory ~  response + time, value.var = "mean") %>% 
-    left_join(y= who_countries, by = "country.or.territory")
+    left_join(y= who_countries, by = "country.or.territory") %>% 
+    mutate(question = question)
   fname = paste0("mean_",fit_files[i])
   write.csv(mean_d, fname)
 }
