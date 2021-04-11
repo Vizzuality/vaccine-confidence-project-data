@@ -23,3 +23,16 @@ country_d_strong_agree = d %>%
   select(country.or.territory, time,  mean) %>% 
   dcast( time ~country.or.territory , value.var = "mean")
 write.csv(country_d_strong_agree,"/Users/gretacvega/Documents/GitHub/vcp/data/model_fit_safe_countries_strongly_agree.csv")
+### create csv with all data
+list.files()
+fit_files = list.files("data/mmc2", pattern ="model_fit" )
+f_list = list()
+for (i in 1:length(fit_files)){
+  f_list[[i]] = read.csv(paste0("data/mmc2/",fit_files[i]))
+  names(f_list)[i] = fit_files[i]
+}
+
+names(f_list) = c("effective", "important", "safe")
+df = ldply(f_list)
+head(df)
+write.csv(df,"/Users/gretacvega/Documents/GitHub/vcp/data/model_fit_all_questions.csv")
