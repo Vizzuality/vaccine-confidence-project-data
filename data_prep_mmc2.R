@@ -23,6 +23,8 @@ country_d_strong_agree = d %>%
   select(country.or.territory, time,  mean) %>% 
   dcast( time ~country.or.territory , value.var = "mean")
 write.csv(country_d_strong_agree,"/Users/gretacvega/Documents/GitHub/vcp/data/model_fit_safe_countries_strongly_agree.csv")
+
+
 ### create csv with all data
 list.files()
 fit_files = list.files("data/mmc2", pattern ="model_fit" )
@@ -35,4 +37,25 @@ for (i in 1:length(fit_files)){
 names(f_list) = c("effective", "important", "safe")
 df = ldply(f_list)
 head(df)
+#in arcgis create a concatenate variable with the question and the response
 write.csv(df,"/Users/gretacvega/Documents/GitHub/vcp/data/model_fit_all_questions.csv")
+
+
+# create wide tables for three questions
+setwd("/Users/gretacvega/Documents/GitHub/vcp/")
+list.files()
+fit_files = list.files("data/mmc2", pattern ="model_fit" )
+
+for (i in 1:length(fit_files)){
+  d = read.csv(paste0("data/mmc2/",fit_files[i]))
+  who_countries = d %>% 
+    select(country.or.territory, who_region) %>% 
+    distinct()
+  mean_d = d %>% 
+    #filter(response == "strongly agree") %>% 
+    select(country.or.territory, time, response, mean) %>% 
+    dcast(country.or.territory ~  response + time, value.var = "mean") %>% 
+    left_join(y= who_countries, by = "country.or.territory")
+  fname = paste0("mean_",fit_files[i])
+  write.csv(mean_d, fname)
+}
