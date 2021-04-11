@@ -30,7 +30,12 @@ list.files()
 fit_files = list.files("data/mmc2", pattern ="model_fit" )
 f_list = list()
 for (i in 1:length(fit_files)){
-  f_list[[i]] = read.csv(paste0("data/mmc2/",fit_files[i]))
+  d = read.csv(paste0("data/mmc2/",fit_files[i])) %>% 
+    mutate(date = paste0(round(time), " - ", 
+                         ifelse(round(12 * (time%%1)) == 0, 
+                                1,
+                                round(12 * (time%%1)))))
+  f_list[[i]] = d
   names(f_list)[i] = fit_files[i]
 }
 
@@ -54,6 +59,10 @@ for (i in 1:length(fit_files)){
     distinct()
   mean_d = d %>% 
     #filter(response == "strongly agree") %>% 
+    mutate(date = paste0(round(time), " - ", 
+                         ifelse(round(12 * (time%%1)) == 0, 
+                                1,
+                                round(12 * (time%%1))))) %>% 
     select(country.or.territory, time, response, mean) %>% 
     dcast(country.or.territory ~  response + time, value.var = "mean") %>% 
     left_join(y= who_countries, by = "country.or.territory") %>% 
@@ -61,3 +70,7 @@ for (i in 1:length(fit_files)){
   fname = paste0("mean_",fit_files[i])
   write.csv(mean_d, fname)
 }
+
+
+
+       
