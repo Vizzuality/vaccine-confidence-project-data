@@ -7,14 +7,6 @@ token = read.table(".env", sep = "=") %>%
   select(V2)
 datawrapper_auth(api_key = token[1,1])
 
-# create an empty chart
-dw_create_chart(title = "portugal API sa",
-                type = "d3-lines")
-
-
-#here we could have a loop, each loop is a country: the data is uploaded, it is formatted, it is published and exported as png.
-# upload the data
-
 
 d = read.csv("/Users/gretacvega/Documents/GitHub/vcp/data/mmc2/model_fit_important-Table 1.csv")
 replacement = c("Democratic Republic of the Congo" = "Democratic Republic of Congo", 
@@ -40,7 +32,8 @@ d$country.or.territory = mapvalues(d$country.or.territory, from = names(replacem
 countries = unique(d$country.or.territory)
 
 
-chart_id = "mgy8T"
+chart_id = "mgy8T" # this chart was created via the web and the visualise parameters are correct. 
+
 good_graph_visualize = dw_retrieve_chart_metadata(chart_id)
 #v_settings = good_graph_visualize$content$metadata$visualize
 
@@ -88,6 +81,12 @@ for (i in 1:length(countries)){ #
 ## testing
 df = read.csv("/Users/gretacvega/Documents/GitHub/vcp/data/mmc2/model_fit_safe-Table 1.csv") %>% 
   filter(country.or.territory == "Portugal" & response == "strongly agree")
+
+# create an empty chart
+dw_create_chart(title = "portugal API sa",
+                type = "d3-lines")
+
+
 dw_data_to_chart(x = df, chart_id = "Vm15J")
 
 
