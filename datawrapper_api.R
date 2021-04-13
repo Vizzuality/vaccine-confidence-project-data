@@ -65,7 +65,6 @@ for (i in 1:length(countries)){ #
   
   #update the data
   dw_data_to_chart(x = d_sel_wide, chart_id = chart_id)
-  
   #change metadata (add country name to title)
   dw_edit_chart(chart_id, title = paste0("Importance in ", sel_country))
   #publish
