@@ -111,7 +111,8 @@ head(res_all)
 d_map = d %>% 
   filter(response == "strongly agree" & time == 2020) %>% 
   select(country.or.territory,  mean) %>% 
-  left_join(res_all)
+  left_join(res_all) %>% 
+  mutate(md_url = paste0("![](https://i.imgur.com/",imgur_id,".png)"))
 write.csv(d_map, "world_important_stronglyagree_2020.csv", row.names = FALSE)
 
 ############
