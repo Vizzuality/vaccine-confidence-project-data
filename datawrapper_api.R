@@ -73,50 +73,50 @@ for (i in 1:length(countries)){ #
   #publish
   dw_publish_chart(chart_id = chart_id)
   #export
-  p = dw_export_chart(chart_id, type = "png", unit = "px", width = 400, height = 240, scale = 1, plain = TRUE)
+  p = dw_export_chart(chart_id, type = "png", unit = "px", width = 400, height = 240, scale = 1, plain = TRUE) # this line needs to change to have a width of 190 px. 
   image_write(p, path = paste0("charts_tooltip/",sel_country,"_importance.png"), format = "png")
 }
 
 # upload images to imgur, then get the name and the link from the uploaded images.
-library(httr)
-
-token_imgur = read.table(".env", sep = "=") %>% 
-  filter(V1 == "IMGUR_TOKEN") %>% 
-  select(V2)
-bearer = paste("Bearer",token_imgur, sep = " ")
-# there are several pages with data
-getCountInJson <- httr::GET("https://api.imgur.com/3/account/gretacv/images/count",
-                           accept_json(), 
-                           add_headers('Authorization' = bearer))
-
-res = list()
-for (i in 0:as.integer(content(getCountInJson)$data/50)){
-url = paste0('https://api.imgur.com/3/account/gretacv/images/', i)
-getInfoInJson <- httr::GET(url, 
-                           accept_json(), 
-                           add_headers('Authorization' = bearer))
-
-
-res[[i+1]] = ldply(lapply(content(getInfoInJson, as = "parsed")$data, unlist))
-
-
-}
-res_all = ldply(res) %>% 
-  select(id, name) %>% 
-  separate(name, 
-           sep = "_", 
-           into = c("country.or.territory", "question")) %>% 
-  rename("imgur_id" = "id")
-
-dim(res_all)
-head(res_all)
-# add the link information to the mean strongly agree df that is used for the map
-d_map = d %>% 
-  filter(response == "strongly agree" & time == 2020) %>% 
-  select(country.or.territory,  mean) %>% 
-  left_join(res_all) %>% 
-  mutate(md_url = paste0("![](https://i.imgur.com/",imgur_id,".png)"))
-write.csv(d_map, "world_important_stronglyagree_2020.csv", row.names = FALSE)
+# library(httr)
+# 
+# token_imgur = read.table(".env", sep = "=") %>% 
+#   filter(V1 == "IMGUR_TOKEN") %>% 
+#   select(V2)
+# bearer = paste("Bearer",token_imgur, sep = " ")
+# # there are several pages with data
+# getCountInJson <- httr::GET("https://api.imgur.com/3/account/gretacv/images/count",
+#                            accept_json(), 
+#                            add_headers('Authorization' = bearer))
+# 
+# res = list()
+# for (i in 0:as.integer(content(getCountInJson)$data/50)){
+# url = paste0('https://api.imgur.com/3/account/gretacv/images/', i)
+# getInfoInJson <- httr::GET(url, 
+#                            accept_json(), 
+#                            add_headers('Authorization' = bearer))
+# 
+# 
+# res[[i+1]] = ldply(lapply(content(getInfoInJson, as = "parsed")$data, unlist))
+# 
+# 
+# }
+# res_all = ldply(res) %>% 
+#   select(id, name) %>% 
+#   separate(name, 
+#            sep = "_", 
+#            into = c("country.or.territory", "question")) %>% 
+#   rename("imgur_id" = "id")
+# 
+# dim(res_all)
+# head(res_all)
+# # add the link information to the mean strongly agree df that is used for the map
+# d_map = d %>% 
+#   filter(response == "strongly agree" & time == 2020) %>% 
+#   select(country.or.territory,  mean) %>% 
+#   left_join(res_all) %>% 
+#   mutate(md_url = paste0("![](https://i.imgur.com/",imgur_id,".png)"))
+# write.csv(d_map, "world_important_stronglyagree_2020.csv", row.names = FALSE)
 
 #instead of using imgur, using a repository of the images. The images should be saved in a local folder which is part of the repository
 head(d)
