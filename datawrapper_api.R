@@ -1,7 +1,10 @@
 #devtools::install_github("munichrocker/DatawRappr")
 library(DatawRappr)
 library(magick)
+library(plyr)
+library(dplyr)
 library(tidyr)
+library(reshape2)
 # connect to the API and authenticate
 token = read.table(".env", sep = "=") %>% 
   filter(V1 == "DATAWRAPPER_TOKEN") %>% 
@@ -114,6 +117,52 @@ d_map = d %>%
   left_join(res_all) %>% 
   mutate(md_url = paste0("![](https://i.imgur.com/",imgur_id,".png)"))
 write.csv(d_map, "world_important_stronglyagree_2020.csv", row.names = FALSE)
+
+#instead of using imgur, using a repository of the images. The images should be saved in a local folder which is part of the repository
+head(d)
+github_folder = "https://raw.githubusercontent.com/Vizzuality/vaccine-confidence-project-data/main/charts_tooltip/"
+img_files = data.frame(fileName = dir("charts_tooltip")) %>% 
+            separate(fileName, 
+                      sep = "_", 
+                      into = c("country.or.territory", "question"),
+                      remove = FALSE) %>% 
+            mutate(question = gsub('.{4}$', '', question),
+                   md_url = paste0("![](",github_folder,fileName,")"),
+                   url = paste0(github_folder,fileName))
+
+head(img_files)
+
+
+
+d_map = d %>% 
+  filter(response == "strongly agree" & time == 2020) %>% 
+  select(country.or.territory,  mean) %>% 
+  left_join(img_files) 
+write.csv(d_map, "world_important_stronglyagree_2020_github.csv", row.names = FALSE)
+
+## customisation of sentence in the tooltip
+# "Since 2015 there has been an increase of strongly agreement."
+d_map = d %>% 
+  select(country.or.territory,  mean, time, response) %>% 
+  filter(response == "strongly agree" & time %in% c(2015.833, 2020)) %>% 
+  dcast(country.or.territory +  response ~ time, value.var = "mean") %>% 
+  rename("mean" = "2020", "X2015.833" = "2015.833") %>% 
+  mutate(since2015 = mean- X2015.833) %>% 
+  select(country.or.territory,  since2015, mean) %>% 
+  left_join(img_files) 
+write.csv(d_map, "world_important_stronglyagree_2020_github.csv", row.names = FALSE)
+
+
+# for reference, the html code to use in the tooltip
+# Since 2015 there has been <span style="color: {{ since2015 <= 0 ? 'Tomato' : 'DodgerBlue' }}"><b>{{ since2015 <= 0 ? 'a decrease' : 'an increase' }} </b> </span> of strongly agreement.
+# <img src="{{ url }}" 
+# width="190" 
+# height=auto />
+
+
+
+
+
 
 ############
 ## testing
