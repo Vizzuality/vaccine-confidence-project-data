@@ -32,7 +32,7 @@ map_titles = c("imp" = "Proportion of population who strongly agree vaccines are
                "eff" = "Proportion of population who strongly agree vaccines are efficient in 2020", 
                "saf" = "Proportion of population who strongly agree vaccines are safe in 2020")
 
-for (ind in c("eff", "imp", "saf")){
+for (ind in c("imp","eff","saf")){ #  
 
 # select one indicator
 sel_ind = ind
@@ -74,7 +74,7 @@ good_graph_visualize = dw_retrieve_chart_metadata(chart_id)
 # create directory to save images
 dir.create(paste0("output_tooltip/", study, "/", sel_ind), recursive = TRUE)
 # producing the 150 images takes 15 minutes
-for (i in 1:length(countries)){ #
+for (i in i:length(countries)){ #
   sel_country = countries[i]
   
   #prepare the data
@@ -125,9 +125,9 @@ github_folder = paste0("https://raw.githubusercontent.com/Vizzuality/vaccine-con
 img_files = data.frame(fileName = dir(paste0("output_tooltip/", study, "/", sel_ind))) %>% 
   separate(fileName, 
            sep = "_", 
-           into = c("country.or.territory", "question"),
+           into = c( "question", "country.or.territory"),
            remove = FALSE) %>% 
-  mutate(question = gsub('.{4}$', '', question),
+  mutate(country.or.territory = gsub('.{4}$', '', country.or.territory),
          md_url = paste0("![](",github_folder,fileName,")"),
          url = paste0(github_folder,fileName))
 
