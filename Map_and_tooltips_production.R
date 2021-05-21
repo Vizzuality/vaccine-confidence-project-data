@@ -6,6 +6,7 @@ library(reshape2)
 library(ggplot2)
 library(plyr)
 library(dplyr)
+library(tidyr)
 library(DatawRappr)
 library(magick)
 #library(git2r)
@@ -18,16 +19,23 @@ datawrapper_auth(api_key = token[1,1])
 
 
 # Data preparation
-
+study = "mmc2"
+study_source_name  = "Figueiredo et al. 2020"
+study_source_url = "https://www.thelancet.com/journals/lancet/article/PIIS0140-6736(20)31558-0/fulltext"
 
 # for each indicator there is one csv file
-study = "mmc2"
+
 fit_files = list.files(paste0("data/",study), pattern ="model_fit" )
 names(fit_files) = c("eff", "imp", "saf")
 titles = c("imp" = "Importance in ", "eff" = "Efficiency in ", "saf" = "Safety in ")
+map_titles = c("imp" = "Proportion of population who strongly agree vaccines are important in 2020", 
+               "eff" = "Proportion of population who strongly agree vaccines are efficient in 2020", 
+               "saf" = "Proportion of population who strongly agree vaccines are safe in 2020")
+
+for (ind in c("eff", "imp", "saf")){
 
 # select one indicator
-sel_ind = "imp"
+sel_ind = ind
 d = read.csv(paste0("data/mmc2/", fit_files[sel_ind]))
 
 # initial preparation of data for map widget
@@ -54,12 +62,8 @@ replacement = c("Democratic Republic of the Congo" = "Democratic Republic of Con
 d$country.or.territory = mapvalues(d$country.or.territory, from = names(replacement), to = replacement)
 
 
-d_map = d %>% 
-  filter(response == "strongly agree" & time == 2020) %>% 
-  select(country.or.territory,  mean)
 
-
-# Create tooltop time series: using the datawrapper API to create images, save the images locally and push them to github. Get the url of the images and create the trend information to join it to d_map
+# Create tooltop time series: using the datawrapper API to create images, save the images locally and push them to github. Get the url of the images and create the trend information to create d_map
 
 countries = unique(d$country.or.territory)
 
@@ -113,7 +117,40 @@ commit_m = paste("added time series charts for", study, sel_ind)
 repo <- git2r::repository(".")
 git2r::add(repo = repo, dir_to_push)
 git2r::commit(repo, commit_m)
-git2r::push(repo, credentials = cred) # i need to fix this, the pushing was done from iterm
+#git2r::push(repo, credentials = cred) # i need to fix this, the pushing was done from iterm
+cat("do git push \n")
+# Gathering the repository images url to add to the map table d_map
 
+github_folder = paste0("https://raw.githubusercontent.com/Vizzuality/vaccine-confidence-project-data/main/", "output_tooltip/", study, "/", sel_ind, "/")
+img_files = data.frame(fileName = dir(paste0("output_tooltip/", study, "/", sel_ind))) %>% 
+  separate(fileName, 
+           sep = "_", 
+           into = c("country.or.territory", "question"),
+           remove = FALSE) %>% 
+  mutate(question = gsub('.{4}$', '', question),
+         md_url = paste0("![](",github_folder,fileName,")"),
+         url = paste0(github_folder,fileName))
 
+d_map = d %>% 
+  select(country.or.territory,  mean, time, response) %>% 
+  filter(response == "strongly agree" & time %in% c(2015.833, 2020)) %>% 
+  dcast(country.or.territory +  response ~ time, value.var = "mean") %>% 
+  rename("mean" = "2020", "X2015.833" = "2015.833") %>% 
+  mutate(since2015 = mean- X2015.833) %>% 
+  select(country.or.territory,  since2015, mean) %>% 
+  left_join(img_files)  
 
+map_id = "0w5GJ"
+new_map = dw_copy_chart(map_id) 
+new_map_id = new_map$content$publicId
+
+describe_list = new_map$content$metadata$describe
+describe_list$`source-name` = study_source_name
+describe_list$`source-url` = study_source_url
+
+dw_data_to_chart(x = d_map, chart_id = new_map_id)
+dw_edit_chart(new_map_id, 
+              title = map_titles[sel_ind],
+              describe = describe_list)
+dw_publish_chart(chart_id = new_map_id)
+}
