@@ -3,7 +3,6 @@
 # it probably makes sense to create the process as functions to be as clean as possible.
 setwd("/Users/gretacvega/Documents/GitHub/vcp/")
 library(reshape2)
-library(ggplot2)
 library(plyr)
 library(dplyr)
 library(tidyr)
@@ -19,6 +18,7 @@ datawrapper_auth(api_key = token[1,1])
 
 
 # Data preparation
+# @TODO we will have to loop through studies and map the name of the columns.
 study = "mmc2"
 study_source_name  = "Figueiredo et al. 2020"
 study_source_url = "https://www.thelancet.com/journals/lancet/article/PIIS0140-6736(20)31558-0/fulltext"
