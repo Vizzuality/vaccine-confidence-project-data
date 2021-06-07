@@ -1,5 +1,7 @@
 # vaccine specific
-
+library(plyr)
+library(dplyr)
+library(reshape2)
 setwd("/Users/gretacvega/Documents/GitHub/vcp/")
 dir_list = c("2015_EOY","2016_Sahel","2018_EU","2019_EOY", "2019_WGM", "2020_AfricaCDC", "2020_EU", "2020_Janssen", "2020_UK")
 
