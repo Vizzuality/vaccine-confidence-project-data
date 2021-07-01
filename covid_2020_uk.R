@@ -19,7 +19,13 @@ for (f in 1:length(file_list)){
 }
 res_df = ldply(res_list, .id = "response") %>% 
   left_join(subset(dd, select = c("NUTS3_CODE", "NUTS3_REGION")))  %>% 
-  dcast(NUTS3_CODE+ NUTS3_REGION ~ response, value.var = "mean")
+  dcast(NUTS3_CODE+ NUTS3_REGION ~ response, value.var = "mean") %>% 
+  mutate(no_num = as.numeric(gsub("%","",no)),
+         no_num_log = log(no_num), 
+         unsure_no_num = as.numeric(gsub("%","",unsure_no)),
+         unsure_yes_num = as.numeric(gsub("%","",unsure_yes)),
+         yes_num = as.numeric(gsub("%","",yes)),
+         yes_num_log = log(yes_num))
   
 write.csv(res_df, "outputs/uk_covid_2020.csv")
 
