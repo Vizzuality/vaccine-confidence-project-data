@@ -2,6 +2,8 @@ library(plyr)
 library(dplyr)
 library(reshape2)
 library(foreign)
+library(tidyverse)
+library(DatawRappr)
 setwd("/Users/gretacvega/Documents/GitHub/vcp/")
 dir_list = c("2015_EOY","2016_Sahel","2018_EU","2019_EOY", "2019_WGM", "2020_AfricaCDC", "2020_EU", "2020_Janssen", "2020_UK")
 
@@ -20,7 +22,7 @@ ddd = d %>%
 
 names(ddd) = c("Country", "sex" ,"Age", "VaxImp", "VaxSaf", "VaxEff", "weight")
 
-# map
+# map importance
 countries = as.character(unique(ddd$Country))
 res_list = list()
 
@@ -46,6 +48,82 @@ res_df = ldply(res_list, .id = "Country") %>%
   mutate(Neither = `Do not know` + `Tend to agree` + `Tend to disagree`) %>% 
   select(Country, `Strongly agree`, Neither, `Strongly disagree`)
 write.csv(res_df, "outputs/2020_Janssen_map.csv")
+
+#map safety
+
+countries = as.character(unique(ddd$Country))
+res_list = list()
+
+for (i in 1:length(countries)){
+  country = countries[i]
+  dc = ddd %>% 
+    filter(Country == country)
+  
+  d_overall =  ddd %>% 
+    filter(Country == country) %>% 
+    group_by(VaxSaf) %>% 
+    #group_by(indicator) %>% 
+    summarise(ss = sum(weight)) %>% 
+    mutate(weighted_perc = ss*100/sum(dc$weight)) %>% 
+    select(VaxSaf, weighted_perc) %>% 
+    remove_rownames %>% 
+    column_to_rownames(var="VaxSaf") %>% 
+    t() 
+  res_list[[i]] = d_overall
+  names(res_list)[i]=country
+}
+res_df = ldply(res_list, .id = "Country") %>% 
+  mutate(Neither = `Do not know` + `Tend to agree` + `Tend to disagree`) %>% 
+  select(Country, `Strongly agree`, Neither, `Strongly disagree`)
+
+table_id = "1ZCDR"
+new_table = dw_copy_chart(table_id) 
+new_table_id = new_table$content$publicId
+
+
+
+dw_data_to_chart(x = res_df, chart_id = new_table_id)
+dw_edit_chart(new_table_id, 
+              title = "Proportion of the population who strongly agrees that vaccines are safe")
+dw_publish_chart(chart_id = new_table_id)
+
+
+#map effective
+countries = as.character(unique(ddd$Country))
+res_list = list()
+
+for (i in 1:length(countries)){
+  country = countries[i]
+  dc = ddd %>% 
+    filter(Country == country)
+  
+  d_overall =  ddd %>% 
+    filter(Country == country) %>% 
+    group_by(VaxEff) %>% 
+    #group_by(indicator) %>% 
+    summarise(ss = sum(weight)) %>% 
+    mutate(weighted_perc = ss*100/sum(dc$weight)) %>% 
+    select(VaxEff, weighted_perc) %>% 
+    remove_rownames %>% 
+    column_to_rownames(var="VaxEff") %>% 
+    t() 
+  res_list[[i]] = d_overall
+  names(res_list)[i]=country
+}
+res_df = ldply(res_list, .id = "Country") %>% 
+  mutate(Neither = `Do not know` + `Tend to agree` + `Tend to disagree`) %>% 
+  select(Country, `Strongly agree`, Neither, `Strongly disagree`)
+
+table_id = "1ZCDR"
+new_table = dw_copy_chart(table_id) 
+new_table_id = new_table$content$publicId
+
+
+
+dw_data_to_chart(x = res_df, chart_id = new_table_id)
+dw_edit_chart(new_table_id, 
+              title = "Proportion of the population who strongly agrees that vaccines are effective")
+dw_publish_chart(chart_id = new_table_id)
 
 
 #tables
@@ -174,7 +252,7 @@ ddd = d %>%
 
 names(ddd) = c("Country", "sex" ,"Age", "VaxSaf", "VaxImp",  "VaxEff", "weight")
 
-
+#map importance covid 19
 countries = as.character(unique(ddd$Country))
 res_list = list()
 
@@ -201,7 +279,82 @@ res_df = ldply(res_list, .id = "Country") %>%
   select(Country, `Strongly agree`, Neither, `Strongly disagree`)
 write.csv(res_df, "outputs/2020_Janssen_covid_map.csv")
 
+# map covid safety
+countries = as.character(unique(ddd$Country))
+res_list = list()
 
+for (i in 1:length(countries)){
+  country = countries[i]
+  dc = ddd %>% 
+    filter(Country == country)
+  
+  d_overall =  ddd %>% 
+    filter(Country == country) %>% 
+    group_by(VaxSaf) %>% 
+    #group_by(indicator) %>% 
+    summarise(ss = sum(weight)) %>% 
+    mutate(weighted_perc = ss*100/sum(dc$weight)) %>% 
+    select(VaxSaf, weighted_perc) %>% 
+    remove_rownames %>% 
+    column_to_rownames(var="VaxSaf") %>% 
+    t() 
+  res_list[[i]] = d_overall
+  names(res_list)[i]=country
+}
+res_df = ldply(res_list, .id = "Country") %>% 
+  mutate(Neither = `Do not know` + `Agree` + `Disagree`) %>% 
+  select(Country, `Strongly agree`, Neither, `Strongly disagree`)
+
+
+table_id = "1ZCDR"
+new_table = dw_copy_chart(table_id) 
+new_table_id = new_table$content$publicId
+
+
+
+dw_data_to_chart(x = res_df, chart_id = new_table_id)
+dw_edit_chart(new_table_id, 
+              title = "Proportion of the population who strongly agrees that a COVID-19 vaccine is safe")
+dw_publish_chart(chart_id = new_table_id)
+
+#map covid effectiveness
+
+countries = as.character(unique(ddd$Country))
+res_list = list()
+
+for (i in 1:length(countries)){
+  country = countries[i]
+  dc = ddd %>% 
+    filter(Country == country)
+  
+  d_overall =  ddd %>% 
+    filter(Country == country) %>% 
+    group_by(VaxEff) %>% 
+    #group_by(indicator) %>% 
+    summarise(ss = sum(weight)) %>% 
+    mutate(weighted_perc = ss*100/sum(dc$weight)) %>% 
+    select(VaxEff, weighted_perc) %>% 
+    remove_rownames %>% 
+    column_to_rownames(var="VaxEff") %>% 
+    t() 
+  res_list[[i]] = d_overall
+  names(res_list)[i]=country
+}
+res_df = ldply(res_list, .id = "Country") %>% 
+  mutate(Neither = `Do not know` + `Agree` + `Disagree`) %>% 
+  select(Country, `Strongly agree`, Neither, `Strongly disagree`)
+
+
+table_id = "1ZCDR"
+new_table = dw_copy_chart(table_id) 
+new_table_id = new_table$content$publicId
+
+
+
+dw_data_to_chart(x = res_df, chart_id = new_table_id)
+dw_edit_chart(new_table_id, 
+              title = "Proportion of the population who strongly agrees that a COVID-19 vaccine is effective")
+dw_publish_chart(chart_id = new_table_id)
 
 #tables
 age_replacement = c("25-34 years" = "25-34",

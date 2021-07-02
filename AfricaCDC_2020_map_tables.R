@@ -20,7 +20,7 @@ names(ddd) = c("Country", "sex", "Age", "VaxImp", "VaxSaf", "VaxEff", "weight")
 head(ddd)
 
 
-# map
+# map importance
 countries = as.character(unique(ddd$Country))
 res_list = list()
 
@@ -67,6 +67,123 @@ res_df$Country = mapvalues(res_df$Country, from = names(replacement), to = repla
 
 
 write.csv(res_df, "outputs/2020_AfricaCDC_general_map.csv")
+
+#map safe
+
+countries = as.character(unique(ddd$Country))
+res_list = list()
+
+for (i in 1:length(countries)){
+  country = countries[i]
+  dc = ddd %>% 
+    filter(Country == country)
+  
+  d_overall =  ddd %>% 
+    filter(Country == country) %>% 
+    group_by(VaxSaf) %>% 
+    #group_by(indicator) %>% 
+    summarise(ss = sum(weight)) %>% 
+    mutate(weighted_perc = ss*100/sum(dc$weight)) %>% 
+    select(VaxSaf, weighted_perc) %>% 
+    remove_rownames %>% 
+    column_to_rownames(var="VaxSaf") %>% 
+    t() 
+  
+  
+  res_list[[i]] = d_overall
+  names(res_list)[i]=country
+}
+res_df = ldply(res_list, .id = "Country") %>% 
+  mutate(Neither = ifelse(is.na(`Dont know`),0, `Dont know`) + ifelse(is.na(`Tend to Agree`),0, `Tend to Agree`) + ifelse(is.na(`Tend to Disagree`),0, `Tend to Disagree`) + ifelse(is.na(`Refused`),0, `Refused`)) %>% 
+  select(Country, `Strongly Agree`, Neither, `Strongly Disagree`)
+
+replacement = c("7 Cote d Ivoire" = "Côte d'Ivoire",
+                "5 South Africa" = "South Africa",
+                "6 Niger" = "Niger",
+                "3 Nigeria" = "Nigeria",
+                "9 DR Congo" = "Democratic Republic of Congo",
+                "4 Sudan" = "Sudan",
+                "8 Gabon"  = "Gabon",
+                "12 Kenya"   = "Kenya", 
+                "11 Burkina Faso" = "Burkina Faso",
+                "15 Malawi" = "Malawi",
+                "14 Senegal" = "Senegal",
+                "13 Uganda" = "Uganda",
+                "10 Ethiopia" = "Ethiopia",
+                "1 Morocco" = "Morocco",
+                "2 Tunisia" = "Tunisia")
+res_df$Country = mapvalues(res_df$Country, from = names(replacement), to = replacement)
+
+
+table_id = "lJHXc"
+new_table = dw_copy_chart(table_id) 
+new_table_id = new_table$content$publicId
+
+
+
+dw_data_to_chart(x = res_df, chart_id = new_table_id)
+dw_edit_chart(new_table_id, 
+              title = "Proportion of the population who strongly agrees that vaccines are safe")
+dw_publish_chart(chart_id = new_table_id)
+
+# map effective
+countries = as.character(unique(ddd$Country))
+res_list = list()
+
+for (i in 1:length(countries)){
+  country = countries[i]
+  dc = ddd %>% 
+    filter(Country == country)
+  
+  d_overall =  ddd %>% 
+    filter(Country == country) %>% 
+    group_by(VaxEff) %>% 
+    #group_by(indicator) %>% 
+    summarise(ss = sum(weight)) %>% 
+    mutate(weighted_perc = ss*100/sum(dc$weight)) %>% 
+    select(VaxEff, weighted_perc) %>% 
+    remove_rownames %>% 
+    column_to_rownames(var="VaxEff") %>% 
+    t() 
+  
+  
+  res_list[[i]] = d_overall
+  names(res_list)[i]=country
+}
+res_df = ldply(res_list, .id = "Country") %>% 
+  mutate(Neither = ifelse(is.na(`Dont know`),0, `Dont know`) + ifelse(is.na(`Tend to Agree`),0, `Tend to Agree`) + ifelse(is.na(`Tend to Disagree`),0, `Tend to Disagree`) + ifelse(is.na(`Refused`),0, `Refused`)) %>% 
+  select(Country, `Strongly Agree`, Neither, `Strongly Disagree`)
+
+replacement = c("7 Cote d Ivoire" = "Côte d'Ivoire",
+                "5 South Africa" = "South Africa",
+                "6 Niger" = "Niger",
+                "3 Nigeria" = "Nigeria",
+                "9 DR Congo" = "Democratic Republic of Congo",
+                "4 Sudan" = "Sudan",
+                "8 Gabon"  = "Gabon",
+                "12 Kenya"   = "Kenya", 
+                "11 Burkina Faso" = "Burkina Faso",
+                "15 Malawi" = "Malawi",
+                "14 Senegal" = "Senegal",
+                "13 Uganda" = "Uganda",
+                "10 Ethiopia" = "Ethiopia",
+                "1 Morocco" = "Morocco",
+                "2 Tunisia" = "Tunisia")
+res_df$Country = mapvalues(res_df$Country, from = names(replacement), to = replacement)
+
+
+table_id = "lJHXc"
+new_table = dw_copy_chart(table_id) 
+new_table_id = new_table$content$publicId
+
+
+
+dw_data_to_chart(x = res_df, chart_id = new_table_id)
+dw_edit_chart(new_table_id, 
+              title = "Proportion of the population who strongly agrees that vaccines are effective")
+dw_publish_chart(chart_id = new_table_id)
+
+
 
 #tables
 head(ddd)
@@ -178,7 +295,7 @@ ddd = dd %>%
 names(ddd) = c("Country", "sex", "Age", "VaxSaf","VaxImp",  "VaxEff", "weight")
 head(ddd)
 
-# map
+# map importance covid
 countries = as.character(unique(ddd$Country))
 res_list = list()
 
@@ -226,7 +343,120 @@ res_df$Country = mapvalues(res_df$Country, from = names(replacement), to = repla
 
 write.csv(res_df, "outputs/2020_AfricaCDC_covid_map.csv")
 
+#map safe covid
+countries = as.character(unique(ddd$Country))
+res_list = list()
 
+for (i in 1:length(countries)){
+  country = countries[i]
+  dc = ddd %>% 
+    filter(Country == country)
+  
+  d_overall =  ddd %>% 
+    filter(Country == country) %>% 
+    group_by(VaxSaf) %>% 
+    #group_by(indicator) %>% 
+    summarise(ss = sum(weight)) %>% 
+    mutate(weighted_perc = ss*100/sum(dc$weight)) %>% 
+    select(VaxSaf, weighted_perc) %>% 
+    remove_rownames %>% 
+    column_to_rownames(var="VaxSaf") %>% 
+    t() 
+  
+  
+  res_list[[i]] = d_overall
+  names(res_list)[i]=country
+}
+res_df = ldply(res_list, .id = "Country") %>% 
+  mutate(Neither = ifelse(is.na(`Dont know`),0, `Dont know`) + ifelse(is.na(`Tend to Agree`),0, `Tend to Agree`) + ifelse(is.na(`Tend to Disagree`),0, `Tend to Disagree`) + ifelse(is.na(`Refused`),0, `Refused`)) %>% 
+  select(Country, `Strongly Agree`, Neither, `Strongly Disagree`)
+
+replacement = c("7 Cote d Ivoire" = "Côte d'Ivoire",
+                "5 South Africa" = "South Africa",
+                "6 Niger" = "Niger",
+                "3 Nigeria" = "Nigeria",
+                "9 DR Congo" = "Democratic Republic of Congo",
+                "4 Sudan" = "Sudan",
+                "8 Gabon"  = "Gabon",
+                "12 Kenya"   = "Kenya", 
+                "11 Burkina Faso" = "Burkina Faso",
+                "15 Malawi" = "Malawi",
+                "14 Senegal" = "Senegal",
+                "13 Uganda" = "Uganda",
+                "10 Ethiopia" = "Ethiopia",
+                "1 Morocco" = "Morocco",
+                "2 Tunisia" = "Tunisia")
+res_df$Country = mapvalues(res_df$Country, from = names(replacement), to = replacement)
+
+table_id = "hSXO4"
+new_table = dw_copy_chart(table_id) 
+new_table_id = new_table$content$publicId
+
+
+
+dw_data_to_chart(x = res_df, chart_id = new_table_id)
+dw_edit_chart(new_table_id, 
+              title = "Proportion of the population who strongly agrees that a COVID-19 vaccine is safe")
+dw_publish_chart(chart_id = new_table_id)
+
+#map effective covid 19
+
+countries = as.character(unique(ddd$Country))
+res_list = list()
+
+for (i in 1:length(countries)){
+  country = countries[i]
+  dc = ddd %>% 
+    filter(Country == country)
+  
+  d_overall =  ddd %>% 
+    filter(Country == country) %>% 
+    group_by(VaxEff) %>% 
+    #group_by(indicator) %>% 
+    summarise(ss = sum(weight)) %>% 
+    mutate(weighted_perc = ss*100/sum(dc$weight)) %>% 
+    select(VaxEff, weighted_perc) %>% 
+    remove_rownames %>% 
+    column_to_rownames(var="VaxEff") %>% 
+    t() 
+  
+  
+  res_list[[i]] = d_overall
+  names(res_list)[i]=country
+}
+res_df = ldply(res_list, .id = "Country") %>% 
+  mutate(Neither = ifelse(is.na(`Dont know`),0, `Dont know`) + ifelse(is.na(`Tend to Agree`),0, `Tend to Agree`) + ifelse(is.na(`Tend to Disagree`),0, `Tend to Disagree`) + ifelse(is.na(`Refused`),0, `Refused`)) %>% 
+  select(Country, `Strongly Agree`, Neither, `Strongly Disagree`)
+
+replacement = c("7 Cote d Ivoire" = "Côte d'Ivoire",
+                "5 South Africa" = "South Africa",
+                "6 Niger" = "Niger",
+                "3 Nigeria" = "Nigeria",
+                "9 DR Congo" = "Democratic Republic of Congo",
+                "4 Sudan" = "Sudan",
+                "8 Gabon"  = "Gabon",
+                "12 Kenya"   = "Kenya", 
+                "11 Burkina Faso" = "Burkina Faso",
+                "15 Malawi" = "Malawi",
+                "14 Senegal" = "Senegal",
+                "13 Uganda" = "Uganda",
+                "10 Ethiopia" = "Ethiopia",
+                "1 Morocco" = "Morocco",
+                "2 Tunisia" = "Tunisia")
+res_df$Country = mapvalues(res_df$Country, from = names(replacement), to = replacement)
+
+table_id = "hSXO4"
+new_table = dw_copy_chart(table_id) 
+new_table_id = new_table$content$publicId
+
+
+
+dw_data_to_chart(x = res_df, chart_id = new_table_id)
+dw_edit_chart(new_table_id, 
+              title = "Proportion of the population who strongly agrees that a COVID-19 vaccine is effective")
+dw_publish_chart(chart_id = new_table_id)
+
+#tables
 study_source_name = "Report for Africa CDC."
 study_source_url = ""
 
